@@ -1,6 +1,6 @@
 # Olist E-Commerce Analytics — End-to-End SQL + Power BI Project
 
-A complete, beginner-to-intermediate analytics engineering project built on the **Brazilian E-Commerce Public Dataset by Olist**. You will go from raw CSV files to a normalized PostgreSQL database to a Power BI dashboard — following the exact same steps used to build this project.
+A complete analytics engineering project built on the **Brazilian E-Commerce Public Dataset by Olist**. You will go from raw CSV files to a normalized PostgreSQL database to a Power BI dashboard — following the exact same steps used to build this project.
 
 ---
 
@@ -12,7 +12,7 @@ By the end of this project you will have:
 - **5 analytical SQL views** that clean, join, and pre-aggregate the data for reporting
 - A **Power BI dashboard** connected to those views, showing revenue trends, delivery performance, review scores, and geographic breakdowns
 
-No prior experience with analytics engineering is required. You need to know basic SQL and know how to install software.
+No prior experience with analytics engineering is required. You need to know basic SQL and how to install software.
 
 ---
 
@@ -41,7 +41,7 @@ Download from https://www.postgresql.org/download/
 During installation, note the port (default: `5432`), the superuser name (`postgres`), and the password you set — you will need all three later.
 
 **pgAdmin 4** (optional but recommended for beginners)
-Comes bundled with the PostgreSQL installer on Windows. It gives you a visual interface to run SQL and browse tables.
+Comes bundled with the PostgreSQL installer on Windows. Gives you a visual interface to run SQL and browse tables instead of using the command line.
 
 **Power BI Desktop** (free)
 Download from https://powerbi.microsoft.com/desktop
@@ -72,6 +72,8 @@ Move all 9 files to a folder you can easily find. For example:
 - Windows: `C:\olist_data\`
 - Mac/Linux: `/home/yourname/olist_data/`
 
+> The dataset is too large to include in this repository — download it directly from the Kaggle link above.
+
 ---
 
 ## 3. Set Up PostgreSQL
@@ -84,7 +86,7 @@ Create a new database for this project so it stays isolated from everything else
 3. Name it `olist_analytics` → click **Save**
 
 **Using the command line:**
-```bash
+```sql
 psql -U postgres
 CREATE DATABASE olist_analytics;
 \c olist_analytics
@@ -96,13 +98,13 @@ All SQL commands from this point forward must be run inside the `olist_analytics
 
 ## 4. Create the Schema
 
-Run `sql/0ST_schema.sql`. This creates all 9 tables with the correct column names and data types.
+Run `0ST.sql`. This creates all 9 tables with the correct column names and data types.
 
 ```bash
-psql -U postgres -d olist_analytics -f sql/0ST_schema.sql
+psql -U postgres -d olist_analytics -f 0ST.sql
 ```
 
-Or paste the contents into the pgAdmin query editor and click **Run**.
+Or paste the file contents into the pgAdmin query editor and click **Run**.
 
 **What this creates:**
 
@@ -130,13 +132,13 @@ You should see all 9 tables listed.
 
 ## 5. Add Foreign Key Constraints
 
-Run `sql/1ST_constraints.sql`. This links the tables to each other so PostgreSQL enforces data integrity.
+Run `1ST.sql`. This links the tables to each other so PostgreSQL enforces data integrity.
 
 ```bash
-psql -U postgres -d olist_analytics -f sql/1ST_constraints.sql
+psql -U postgres -d olist_analytics -f 1ST.sql
 ```
 
-> **Important:** Run this file *after* creating the tables but *before* loading any data. If you run it after loading and there are any orphaned records in the CSVs, it will fail.
+> **Important:** Run this file *after* creating the tables but *before* loading any data. If you run it after loading and there are orphaned records in the CSVs, it will fail.
 
 What gets linked:
 - Orders → Customers
@@ -148,7 +150,7 @@ What gets linked:
 
 ## 6. Load the CSV Data
 
-Open `sql/2ND_load.sql` in any text editor **before running it**. You must update every file path to match where you saved the CSVs in Step 2.
+Open `2ND.sql` in any text editor **before running it**. You must update every file path to match where you saved the CSVs in Step 2.
 
 Find lines that look like this:
 ```sql
@@ -167,10 +169,10 @@ Mac/Linux:
 COPY olist_customers_dataset FROM '/home/yourname/olist_data/olist_customers_dataset.csv' DELIMITER ',' CSV HEADER;
 ```
 
-Do this for every `COPY` statement in the file. Then run it:
+Update every `COPY` statement in the file, then run it:
 
 ```bash
-psql -U postgres -d olist_analytics -f sql/2ND_load.sql
+psql -U postgres -d olist_analytics -f 2ND.sql
 ```
 
 > **Note on geolocation:** The geolocation table is commented out in the load script because it contains over 1 million rows and is not used in any of the analytical views. You can load it if you want, but it is not required for the dashboard.
@@ -187,10 +189,10 @@ SELECT COUNT(*) FROM olist_products_dataset;      -- expect ~32,951
 
 ## 7. Create Performance Indexes
 
-Run `sql/3RD_indexes.sql`. This speeds up queries significantly, especially for date-range filters and joins on `order_id`.
+Run `3RD.sql`. This speeds up queries significantly, especially for date-range filters and joins on `order_id`.
 
 ```bash
-psql -U postgres -d olist_analytics -f sql/3RD_indexes.sql
+psql -U postgres -d olist_analytics -f 3RD.sql
 ```
 
 Indexes are created on:
@@ -206,19 +208,19 @@ This runs in a few seconds and only needs to be done once.
 
 ## 8. Build the Analytical Views
 
-Run `sql/4TH_views.sql`. This is the core of the project — it creates 5 views that Power BI (or any BI tool) will query directly.
+Run `4TH.sql`. This is the core of the project — it creates 5 views that Power BI (or any BI tool) will query directly.
 
 ```bash
-psql -U postgres -d olist_analytics -f sql/4TH_views.sql
+psql -U postgres -d olist_analytics -f 4TH.sql
 ```
 
-**Run this file as a whole, not statement by statement.** Some views depend on earlier ones in the same file.
+> **Run this file as a whole, not statement by statement.** Some views depend on earlier ones in the same file.
 
 ---
 
 ### View 1 — `bi_dim_product`
 
-A clean product dimension. Translates Portuguese category names to English using `COALESCE` — if no English translation exists it falls back to the original Portuguese name. Also calculates `volume_cm3` as length × height × width.
+A clean product dimension. Translates Portuguese category names to English using `COALESCE` — if no English translation exists, it falls back to the original Portuguese name. Also calculates `volume_cm3` as length × height × width.
 
 ---
 
@@ -245,11 +247,11 @@ One order can have multiple payment rows (for example a voucher combined with a 
 
 ---
 
-### View 5 — `bi_fact_sales` (main reporting view)
+### View 5 — `bi_fact_sales` ← main reporting view
 
 The master fact table. Joins everything together — order line items, order metrics, product category, review score, payment info, and seller location — into a single wide table. **This is the primary view you connect Power BI to.**
 
-Full list of columns available:
+Full list of columns:
 
 | Column | Description |
 |--------|-------------|
@@ -257,7 +259,7 @@ Full list of columns available:
 | `product_id`, `seller_id` | Product and seller identifiers |
 | `price` | Item price |
 | `freight_value` | Shipping cost for the item |
-| `purchase_date` | Order date (day level) |
+| `purchase_date` | Order date at day level |
 | `purchase_month` | Order date truncated to month — use this for trend charts |
 | `delivered_date` | Actual delivery date |
 | `estimated_date` | Estimated delivery date at time of purchase |
@@ -267,12 +269,12 @@ Full list of columns available:
 | `customer_city`, `customer_state` | Customer location |
 | `category` | Product category in English |
 | `review_score` | 1 to 5 star rating |
-| `payment_type` | credit\_card, boleto, voucher, debit\_card |
-| `payment_installments` | Number of payment installments chosen |
+| `payment_type` | credit_card, boleto, voucher, debit_card |
+| `payment_installments` | Number of installments chosen |
 | `payment_value` | Payment amount |
 | `seller_city`, `seller_state` | Seller location |
 
-**Verify everything was created:**
+**Verify all 5 views were created:**
 ```sql
 SELECT table_name FROM information_schema.views
 WHERE table_schema = 'public'
@@ -288,34 +290,39 @@ SELECT * FROM bi_fact_sales LIMIT 10;
 
 ## 9. Connect Power BI
 
-**Install the PostgreSQL driver first**
-Power BI requires the Npgsql driver to connect to PostgreSQL.
-Download from: https://github.com/npgsql/npgsql/releases
-Get the latest `.msi` file, install it, then restart Power BI Desktop.
+**Step 1 — Install the PostgreSQL driver**
 
-**Connect:**
+Power BI needs the Npgsql driver to connect to PostgreSQL. Without it, PostgreSQL will not appear as a data source option.
+
+Download from: https://github.com/npgsql/npgsql/releases
+Get the latest `.msi` installer, run it, then restart Power BI Desktop.
+
+**Step 2 — Connect**
+
 1. Open Power BI Desktop
-2. Click **Get Data** → search for **PostgreSQL database** → click **Connect**
+2. Click **Get Data** → search **PostgreSQL database** → click **Connect**
 3. Enter:
    - Server: `localhost`
    - Database: `olist_analytics`
-4. Click **OK** and enter your PostgreSQL username and password when prompted
-5. In the Navigator panel, tick these views:
+4. Click **OK** — enter your PostgreSQL username and password when prompted
+5. In the Navigator, select these views:
    - `bi_fact_sales`
    - `bi_payments_order`
    - `bi_dim_product`
 6. Click **Load**
 
-**Suggested visuals:**
+**Step 3 — Build visuals**
 
-- **Line chart** — `purchase_month` on the X axis, `SUM(price)` as the value → monthly GMV trend
-- **Bar chart** — `category` on axis, `SUM(price)` as value → top categories by revenue
+Suggested visuals to recreate the dashboard:
+
+- **Line chart** — `purchase_month` on X axis, `SUM(price)` on Y axis → monthly revenue trend
+- **Bar chart** — `category` on axis, `SUM(price)` as value → top product categories by revenue
 - **Map visual** — `customer_state` with `COUNT(order_id)` → order density across Brazil
-- **Card visuals** — total orders, total GMV, average review score, late delivery %
-- **Donut chart** — `payment_type` → payment method mix
-- **Table** — `customer_state`, `AVERAGE(delivery_days)`, `SUM(is_late)` → delivery performance by region
+- **Card visuals** — Total Orders, Total GMV, Average Review Score, Late Delivery Rate
+- **Donut chart** — `payment_type` → payment method breakdown
+- **Table** — `customer_state`, average `delivery_days`, `SUM(is_late)` → delivery performance by state
 
-**Useful DAX measures to create:**
+**DAX measures to create:**
 
 ```
 Total GMV = SUM(bi_fact_sales[price]) + SUM(bi_fact_sales[freight_value])
@@ -327,61 +334,62 @@ Avg Delivery Days = AVERAGE(bi_fact_sales[delivery_days])
 Avg Review Score = AVERAGE(bi_fact_sales[review_score])
 ```
 
-To filter only delivered orders for delivery metrics, add a visual-level filter where `order_status = "delivered"`.
+To scope delivery metrics to delivered orders only, add a visual-level filter: `order_status = "delivered"`.
 
 ---
 
 ## 10. Project Structure
 
+All files are in the root of the repository. Run the SQL files in this exact order:
+
 ```
 olist-ecommerce-analytics/
 │
-├── sql/
-│   ├── 0ST_schema.sql          # Step 1 — Create all 9 tables
-│   ├── 1ST_constraints.sql     # Step 2 — Add foreign key relationships
-│   ├── 2ND_load.sql            # Step 3 — Load CSVs (update paths before running)
-│   ├── 3RD_indexes.sql         # Step 4 — Add performance indexes
-│   └── 4TH_views.sql           # Step 5 — Create the 5 analytical views
+├── 0ST.sql           # Step 1 — Create all 9 tables
+├── 1ST.sql           # Step 2 — Add foreign key constraints
+├── 2ND.sql           # Step 3 — Load CSVs (update file paths first)
+├── 3RD.sql           # Step 4 — Create performance indexes
+├── 4TH.sql           # Step 5 — Build the 5 analytical views
 │
-├── powerbi/
-│   └── DONE_WORK.pbix          # Completed Power BI dashboard
-│
+├── DONE WORK.pbix    # Completed Power BI dashboard
 └── README.md
 ```
 
-**Always run the SQL files in order: `0ST` → `1ST` → `2ND` → `3RD` → `4TH`**
+**Run order: `0ST` → `1ST` → `2ND` → `3RD` → `4TH`**
+
+Skipping steps or running out of order will cause errors. Specifically — constraints must be added before data is loaded, and views must be created after all tables and data are in place.
 
 ---
 
 ## 11. Troubleshooting
 
 **`COPY` fails with "permission denied on file"**
-PostgreSQL's server-side `COPY` command runs as the PostgreSQL process user, not as you. Two ways to fix this:
-- Use `\copy` (lowercase) instead of `COPY` when running via psql — this runs as your user account
+PostgreSQL's server-side `COPY` runs as the PostgreSQL process user, not your Windows or Mac account. Two fixes:
+- Use `\copy` (lowercase) instead of `COPY` when running via psql — this runs as your user
 - Move the CSV files to a publicly readable folder like `C:\Users\Public\` on Windows
 
-**Foreign key constraint error during load**
-Drop all tables and start from Step 4. Make sure you run `1ST_constraints.sql` before any data is loaded, not after.
+**Foreign key constraint error during data load**
+You ran `1ST.sql` after loading data. Drop all tables (`DROP TABLE ... CASCADE` in reverse dependency order) and restart from Step 4, making sure to run `1ST.sql` before `2ND.sql`.
 
-**Power BI cannot find PostgreSQL as a data source**
-The Npgsql driver is missing. Install it from https://github.com/npgsql/npgsql/releases and restart Power BI.
+**Power BI does not show PostgreSQL as a data source**
+The Npgsql driver is not installed. Download it from https://github.com/npgsql/npgsql/releases and restart Power BI after installing.
 
-**`bi_fact_sales` returns more rows than expected**
-This is usually caused by orders with multiple payment rows in `olist_order_payments_dataset`. For order-level analysis use `bi_payments_order` instead of joining the payments table directly. For item-level analysis, the row count being slightly higher than the order count is expected and correct.
+**`bi_fact_sales` returns more rows than the order count**
+Expected. One order can have multiple payment rows, which fans out when joining. For clean order-level payment analysis, use `bi_payments_order` instead of joining `olist_order_payments_dataset` directly.
 
 **View creation fails with "relation does not exist"**
-Run `4TH_views.sql` as a complete file rather than copy-pasting individual statements. The views must be created in order because `bi_fact_sales` depends on `bi_fact_order` and `bi_dim_product`.
+Run `4TH.sql` as a complete file, not statement by statement. `bi_fact_sales` depends on `bi_fact_order` and `bi_dim_product` — those must exist first. The file is already ordered correctly.
 
 ---
 
 ## Dataset
 
-Source: [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
-License: CC BY-NC-SA 4.0
-Coverage: September 2016 to October 2018
+**Source:** [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
+**License:** CC BY-NC-SA 4.0
+**Coverage:** September 2016 – October 2018
 
-| Table | Approximate Row Count |
-|-------|-----------------------|
+| Table | Approx. Row Count |
+|-------|-------------------|
 | Customers | 99,441 |
 | Orders | 99,441 |
 | Order Items | 112,650 |
