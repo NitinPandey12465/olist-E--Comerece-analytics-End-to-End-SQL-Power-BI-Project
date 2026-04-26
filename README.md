@@ -148,7 +148,7 @@ What gets linked:
 
 ## 6. Load the CSV Data
 the data se way bigger so not able to be import on the file so there is a link of kaggle right below
-https://www.kaggle.com/datasets/shahriarkabir/procurement-kpi-analysis-dataset
+[https://www.kaggle.com/datasets/shahriarkabir/procurement-kpi-analysis-dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
 
 Open `sql/2ND_load.sql` in any text editor **before running it**. You must update every file path to match where you saved the CSVs in Step 2.
 
