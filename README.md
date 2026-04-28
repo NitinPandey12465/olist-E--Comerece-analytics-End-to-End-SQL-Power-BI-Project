@@ -12,7 +12,7 @@ By the end of this project you will have:
 - **5 analytical SQL views** that clean, join, and pre-aggregate the data for reporting
 - A **Power BI dashboard** connected to those views, showing revenue trends, delivery performance, review scores, and geographic breakdowns
 
-No prior experience with analytics engineering is required. You need to know basic SQL and how to install software.
+No prior experience with analytics engineering is required. You need to know basic SQL and how to install software....
 
 ---
 
